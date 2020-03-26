@@ -1,0 +1,3 @@
+# src/
+
+Resources directory.
