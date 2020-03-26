@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="VoLAN" default="build">
+
+  <property file="build.xml.properties"/>
+
+<!--  JDK Definitions  -->
+  <property name="jdk.bin" value="${jdk.home}/bin"/>
+  <path id="jdk.classpath">
+    <fileset dir="${jdk.home}"/>
+  </path>
+
+<!--  Project Definitions  -->
+  <property name="project.output.main" value="${project.output.dir}/main/"/>
+  <property name="project.output.test" value="${project.output.dir}/test/"/>
+  <property name="project.lib.main" value="${project.lib.dir}/main/"/>
+  <property name="project.lib.test" value="${project.lib.dir}/test/"/>
+
+  <property name="project.jdk.home" value="${jdk.home}"/>
+  <property name="project.jdk.bin" value="${jdk.bin}"/>
+
+  <path id="project.classpath">
+    <path refid="jdk.classpath"/>
+  </path>
+
+  <path id="project.classpath.test">
+    <dirset dir="${project.output.main}" includes="**"/>
+    <fileset dir="${project.lib.test}" includes="**/*.jar"/>
+    <path refid="jdk.classpath"/>
+  </path>
+
+<!--  Target Definitions  -->
+  <target name="init" depends="clean">
+    <mkdir dir="${project.output.main}"/>
+    <mkdir dir="${project.output.test}"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="${project.output.dir}"/>
+  </target>
+
+  <target name="build" depends="init">
+    <javac srcdir="${project.src.dir}" destdir="${project.output.main}" includeantruntime="false">
+      <classpath refid="jdk.classpath"/>
+    </javac>
+  </target>
+
+  <target name="build.test" depends="init,build">
+    <javac srcdir="${project.test.dir}" destdir="${project.output.test}" includeantruntime="false">
+      <classpath refid="project.classpath.test"/>
+    </javac>
+  </target>
+
+</project>
