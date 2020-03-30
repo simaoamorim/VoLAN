@@ -5,7 +5,9 @@ name: Java CI
 
 on:
   pull_request:
-    branches: master
+    branches:
+      - master
+      - devel
 
 jobs:
   build:
@@ -20,8 +22,3 @@ jobs:
         java-version: 11
     - name: Build with Ant
       run: ant -noinput -buildfile build.xml
-    - name: Store built artifacts
-      uses: actions/upload-artifact@v1
-      with:
-        name: build
-        path: build
