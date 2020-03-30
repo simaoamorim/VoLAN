@@ -1,10 +1,18 @@
+/*
+ * Copyright (c) 2020 Simão Amorim
+ *
+ * This program is free software, distributed under the terms of the MIT license.
+ * You can find the license file in /LICENSE.
+ *
+ */
+
 import javax.sound.sampled.*;
 
 public class Capture extends Thread {
     protected TargetDataLine input;
     protected SourceDataLine output;
     @SuppressWarnings("CanBeFinal")
-    private AudioFormat audioFormat;
+    protected AudioFormat audioFormat;
 
     public Capture() throws LineUnavailableException {
         setDaemon(true);
