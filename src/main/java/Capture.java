@@ -7,24 +7,26 @@
  */
 
 import javax.sound.sampled.*;
+import java.io.IOException;
+import java.net.*;
 
 public class Capture extends Thread {
-    protected TargetDataLine input;
-    protected SourceDataLine output;
-    @SuppressWarnings("CanBeFinal")
-    protected AudioFormat audioFormat;
+    private TargetDataLine input;
+    @SuppressWarnings({"CanBeFinal", "FieldCanBeLocal"})
+    private AudioFormat audioFormat;
+    private DatagramSocket socket;
+    private InetAddress destination;
 
-    public Capture() throws LineUnavailableException {
+    public Capture(String remote_hostname) throws LineUnavailableException, SocketException, UnknownHostException {
         setDaemon(true);
         audioFormat = new AudioFormat(
-                20000,
+                24000,
                 16,
                 1,
                 true,
                 false
         );
         DataLine.Info i = new DataLine.Info(TargetDataLine.class, audioFormat);
-        DataLine.Info j = new DataLine.Info(SourceDataLine.class, audioFormat);
         if (AudioSystem.isLineSupported(i)) {
             try {
                 input = (TargetDataLine) AudioSystem.getLine(i);
@@ -35,21 +37,11 @@ public class Capture extends Thread {
         } else {
             System.err.println("Line is not supported");
         }
-        if (AudioSystem.isLineSupported(j)) {
-            try {
-                output = (SourceDataLine) AudioSystem.getLine(j);
-                System.out.println("Line opened successfully");
-            } catch (LineUnavailableException e) {
-                System.err.println("Could not get line");
-            }
-        } else {
-            System.err.println("Line is not supported");
-        }
         System.out.println(input.getFormat().toString());
         input.open();
-        System.out.println(output.getFormat().toString());
-        output.open();
         System.out.println("Buffer size: " + input.getBufferSize());
+        destination = InetAddress.getByName(remote_hostname);
+        socket = new DatagramSocket();
     }
 
     public void printMixers() {
@@ -59,54 +51,38 @@ public class Capture extends Thread {
     }
 
     public void printLineControls() {
-        for (Line line: new Line[]{input,output}) {printLineControls(line);}
-    }
-
-    public void printLineControls(Line line) {
-        System.out.println("Available controls for " + line.getLineInfo().getLineClass().getName());
-        for (Control ctrl: line.getControls()) {
+        System.out.println("Available controls for " + input.getLineInfo().getLineClass().getName());
+        for (Control ctrl: input.getControls()) {
             System.out.println(" " + ctrl);
         }
     }
 
     @Override
     public void run() {
-        byte[] buf = new byte[input.getBufferSize()];
+        byte[] buf = new byte[input.getBufferSize()*32*16/1000];
         int avail;
         int read ;
-        int wrote;
         input.start();
-        output.start();
         try {
             input.flush();
             while (!interrupted()) {
-                sleep(10);
+                sleep(32);
                 avail = input.available();
                 if (avail > 0) {
                     read = input.read(buf, 0, avail);
-                    System.out.println("Looping " + read + " bytes");
-                    wrote = output.write(buf, 0, read);
-                    System.out.println("Outputted " + wrote + " bytes");
+                    System.out.println("Read " + read + " bytes");
+                    socket.send(new DatagramPacket(buf, read, destination, Playback.PORT));
                 }
             }
-        } catch (InterruptedException ignored) {}
+        } catch (InterruptedException | IOException ignored) {}
         input.stop();
-        output.stop();
+        socket.close();
     }
 
     public void cleanup() {
         input.stop();
-        output.stop();
         input.drain();
         input.close();
-        output.flush();
-        output.drain();
-        output.close();
     }
-
-    public AudioFormat getAudioFormat() {
-        return audioFormat;
-    }
-
 
 }
