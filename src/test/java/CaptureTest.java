@@ -6,6 +6,8 @@
  *
  */
 
+import handlers.Capture;
+import handlers.Playback;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
