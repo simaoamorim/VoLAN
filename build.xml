@@ -47,13 +47,25 @@
   </target>
 
   <target name="build" depends="init">
-    <javac srcdir="${project.src.dir}" destdir="${project.output.main}" includeantruntime="false">
+    <copy todir="${project.output.main}">
+      <fileset dir="${project.src.dir}/resources">
+        <include name="**/*"/>
+        <exclude name="**/README.md"/>
+      </fileset>
+    </copy>
+    <javac srcdir="${project.src.dir}/java" destdir="${project.output.main}" includeantruntime="false">
       <classpath refid="jdk.classpath"/>
     </javac>
   </target>
 
   <target name="build.test" depends="init,build">
-    <javac srcdir="${project.test.dir}" destdir="${project.output.test}" includeantruntime="false">
+    <copy todir="${project.output.test}">
+      <fileset dir="${project.test.dir}/resources">
+        <include name="**/*"/>
+        <exclude name="**/README.md"/>
+      </fileset>
+    </copy>
+    <javac srcdir="${project.test.dir}/java" destdir="${project.output.test}" includeantruntime="false">
       <classpath refid="project.classpath.test"/>
     </javac>
   </target>
