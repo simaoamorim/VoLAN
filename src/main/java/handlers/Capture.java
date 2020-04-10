@@ -67,11 +67,10 @@ public class Capture extends Thread {
         try {
             input.flush();
             while (!interrupted()) {
-                sleep(32);
+                sleep(10);
                 avail = input.available();
                 if (avail > 0) {
                     read = input.read(buf, 0, avail);
-                    System.out.println("Read " + read + " bytes");
                     socket.send(new DatagramPacket(buf, read, destination, Playback.PORT));
                 }
             }

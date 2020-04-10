@@ -61,18 +61,14 @@ public class Playback extends Thread {
         }
         try {
             while (! isInterrupted()) {
-                sleep(32);
                 try {
                     socket.receive(packet);
                 } catch (SocketTimeoutException e) {
                     continue;
                 }
                 avail = packet.getLength();
-                System.out.println("Received " + avail + " bytes");
                 output.write(buf,0,avail);
             }
-        } catch (InterruptedException ignored) {
-
         } catch (IOException e) {
             e.printStackTrace();
         }
