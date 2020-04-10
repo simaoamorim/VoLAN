@@ -26,7 +26,9 @@
   <property name="project.jdk.home" value="${jdk.home}"/>
   <property name="project.jdk.bin" value="${jdk.bin}"/>
 
-  <path id="project.classpath"/>
+  <path id="project.classpath">
+    <path refid="jdk.classpath"/>
+  </path>
 
   <path id="project.classpath.test">
     <dirset dir="${project.output.main}" includes="**"/>
