@@ -53,7 +53,7 @@
         <exclude name="**/README.md"/>
       </fileset>
     </copy>
-    <javac srcdir="${project.src.dir}/java" destdir="${project.output.main}" includeantruntime="false" includejavaruntime="true">
+    <javac srcdir="${project.src.dir}/java" destdir="${project.output.main}" includeantruntime="false">
       <classpath refid="jdk.classpath"/>
     </javac>
   </target>
@@ -65,7 +65,7 @@
         <exclude name="**/README.md"/>
       </fileset>
     </copy>
-    <javac srcdir="${project.test.dir}/java" destdir="${project.output.test}" includeantruntime="false" includejavaruntime="true">
+    <javac srcdir="${project.test.dir}/java" destdir="${project.output.test}" includeantruntime="false">
       <classpath refid="project.classpath.test"/>
     </javac>
   </target>
