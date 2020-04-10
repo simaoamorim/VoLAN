@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@latest
     - name: Set up JDK 1.11
-      uses: joschi/setup-java@v1
+      uses: cescoffier/setup-java@v1
       with:
         java-version: 11
         architecture: x64
