@@ -70,7 +70,7 @@ public class Capture extends Thread {
                 sleep(10);
                 avail = input.available();
                 if (avail > 0) {
-                    read = input.read(buf, 0, avail);
+                    read = input.read(buf, 0, Math.min(avail, buf.length));
                     socket.send(new DatagramPacket(buf, read, destination, Playback.PORT));
                 }
             }
