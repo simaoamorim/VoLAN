@@ -71,6 +71,7 @@ public class Capture extends Thread {
                 avail = input.available();
                 if (avail > 0) {
                     read = input.read(buf, 0, Math.min(avail, buf.length));
+                    if (read == buf.length) { input.flush(); }
                     socket.send(new DatagramPacket(buf, read, destination, Playback.PORT));
                 }
             }
