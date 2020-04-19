@@ -19,8 +19,33 @@ public class Playback extends Thread {
     @SuppressWarnings({"CanBeFinal", "FieldCanBeLocal"})
     private AudioFormat audioFormat;
     private DatagramSocket socket;
+    private final Object bufferLock = new Object();
+    private byte[] buffer;
+    private int buffer_avail;
     public static final int PORT = 56321;
 
+    private class Player extends Thread {
+        Player() {
+            this.setDaemon(true);
+            this.start();
+        }
+        @Override
+        public void run() {
+            try {
+                while (! interrupted()) {
+                    sleep(10);
+                    if (buffer_avail > 0) {
+                        synchronized (bufferLock) {
+                            output.write(buffer, 0, buffer_avail);
+                            buffer_avail = 0;
+                        }
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public Playback() throws LineUnavailableException, SocketException {
         setDaemon(true);
@@ -46,6 +71,7 @@ public class Playback extends Thread {
         output.open();
         System.out.println("Buffer size: " + output.getBufferSize());
         socket = new DatagramSocket(PORT);
+        new Playback.Player();
     }
 
     public void run() {
@@ -66,8 +92,11 @@ public class Playback extends Thread {
                 } catch (SocketTimeoutException e) {
                     continue;
                 }
-                avail = packet.getLength();
-                output.write(buf,0,avail);
+                synchronized (bufferLock) {
+                    buffer_avail = packet.getLength();
+                    buffer = packet.getData();
+                }
+//                output.write(buf,0,avail);
             }
         } catch (IOException e) {
             e.printStackTrace();
