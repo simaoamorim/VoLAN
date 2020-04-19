@@ -12,10 +12,11 @@
   <property file="build.xml.properties"/>
 
 <!--  JDK Definitions  -->
-  <property name="jdk.bin" value="${jdk.home}/bin"/>
+  <!--<property name="jdk.bin" value="${jdk.home}/bin"/>
   <path id="jdk.classpath">
     <fileset dir="${jdk.home}"/>
-  </path>
+  </path>-->
+  <path id="jdk.classpath"/>
 
 <!--  Project Definitions  -->
   <property name="project.output.main" value="${project.output.dir}/main/"/>
@@ -23,8 +24,8 @@
   <property name="project.lib.main" value="${project.lib.dir}/main/"/>
   <property name="project.lib.test" value="${project.lib.dir}/test/"/>
 
-  <property name="project.jdk.home" value="${jdk.home}"/>
-  <property name="project.jdk.bin" value="${jdk.bin}"/>
+  <!--<property name="project.jdk.home" value="${jdk.home}"/>
+  <property name="project.jdk.bin" value="${jdk.bin}"/>-->
 
   <path id="project.classpath">
     <path refid="jdk.classpath"/>
@@ -53,7 +54,7 @@
         <exclude name="**/README.md"/>
       </fileset>
     </copy>
-    <javac srcdir="${project.src.dir}/java" destdir="${project.output.main}" includeantruntime="false">
+    <javac srcdir="${project.src.dir}/java/" destdir="${project.output.main}" includeantruntime="false">
       <classpath refid="jdk.classpath"/>
     </javac>
   </target>
