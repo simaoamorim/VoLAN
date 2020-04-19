@@ -2,7 +2,7 @@
  * Copyright (c) 2020 Simão Amorim
  *
  * This program is free software, distributed under the terms of the MIT license.
- * You can find the license file in /LICENSE.
+ * You can find the license file in /LICENSE.md.
  *
  */
 

@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2020 Simão Amorim
+Copyright (c) 2020 Simão Amorim <simao_amorim@outlook.pt>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
