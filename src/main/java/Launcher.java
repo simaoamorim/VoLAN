@@ -12,6 +12,7 @@ import handlers.Playback;
 import javax.sound.sampled.LineUnavailableException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
 public class Launcher extends Thread {
     private Capture capture;
@@ -45,9 +46,14 @@ public class Launcher extends Thread {
             return;
         }
         try {
-            new Launcher(args);
-            while (! interrupted()) Thread.sleep(10000);
-        } catch (LineUnavailableException | SocketException | UnknownHostException | InterruptedException e) {
+            Launcher launcher = new Launcher(args);
+            Scanner scanner = new Scanner(System.in);
+            String input;
+            do {
+                input = scanner.nextLine();
+            } while (! input.toLowerCase().equals("exit"));
+            System.exit(0);
+        } catch (LineUnavailableException | SocketException | UnknownHostException e) {
             e.printStackTrace();
         }
     }
