@@ -60,7 +60,7 @@ public class Capture extends Thread {
 
     @Override
     public void run() {
-        byte[] buf = new byte[input.getBufferSize()*32*16/1000];
+        byte[] buf = new byte[input.getBufferSize()*16/100];
         int avail;
         int read ;
         input.start();
@@ -75,7 +75,11 @@ public class Capture extends Thread {
                     socket.send(new DatagramPacket(buf, read, destination, Playback.PORT));
                 }
             }
-        } catch (InterruptedException | IOException ignored) {}
+        } catch (InterruptedException ignored) {
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         input.stop();
         socket.close();
     }

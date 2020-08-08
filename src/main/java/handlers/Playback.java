@@ -75,8 +75,7 @@ public class Playback extends Thread {
     }
 
     public void run() {
-        byte[] buf = new byte[output.getBufferSize()*32*16/1000];
-        int avail;
+        byte[] buf = new byte[output.getBufferSize()*16/100];
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         output.start();
         try {
@@ -96,7 +95,6 @@ public class Playback extends Thread {
                     buffer_avail = packet.getLength();
                     buffer = packet.getData();
                 }
-//                output.write(buf,0,avail);
             }
         } catch (IOException e) {
             e.printStackTrace();
