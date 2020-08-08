@@ -62,5 +62,6 @@ public class CaptureTest {
     @Test
     public void testPrintLineControls() {
         capture.printLineControls();
+        playback.printLineControls();
     }
 }
