@@ -7,6 +7,7 @@
  */
 
 package handlers;
+
 import javax.sound.sampled.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -16,38 +17,14 @@ import java.net.SocketTimeoutException;
 
 public class Playback extends Thread {
     private SourceDataLine output;
-    @SuppressWarnings({"CanBeFinal", "FieldCanBeLocal"})
     private AudioFormat audioFormat;
     private DatagramSocket socket;
-    private final Object bufferLock = new Object();
     private byte[] buffer;
     private int buffer_avail;
     public static final int PORT = 56321;
+    FloatControl gain;
 
-    private class Player extends Thread {
-        Player() {
-            this.setDaemon(true);
-            this.start();
-        }
-        @Override
-        public void run() {
-            try {
-                while (! interrupted()) {
-                    sleep(10);
-                    if (buffer_avail > 0) {
-                        synchronized (bufferLock) {
-                            output.write(buffer, 0, buffer_avail);
-                            buffer_avail = 0;
-                        }
-                    }
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public Playback() throws LineUnavailableException, SocketException {
+    public Playback() throws SocketException {
         setDaemon(true);
         audioFormat = new AudioFormat(
                 24000,
@@ -60,6 +37,14 @@ public class Playback extends Thread {
         if (AudioSystem.isLineSupported(j)) {
             try {
                 output = (SourceDataLine) AudioSystem.getLine(j);
+                output.open();
+                if (output.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                    gain = (FloatControl)
+                            output.getControl(FloatControl.Type.MASTER_GAIN);
+                    gain.setValue((float) 6.0);
+                }
+                else
+                    gain = null;
                 System.out.println("Line opened successfully");
             } catch (LineUnavailableException e) {
                 System.err.println("Could not get line");
@@ -68,18 +53,25 @@ public class Playback extends Thread {
             System.err.println("Line is not supported");
         }
         System.out.println(output.getFormat().toString());
-        output.open();
         System.out.println("Buffer size: " + output.getBufferSize());
         socket = new DatagramSocket(PORT);
-        new Playback.Player();
+    }
+
+    public void printLineControls() {
+        System.out.println("Available controls for " + output.getLineInfo().getLineClass().getName());
+        for (Control ctrl: output.getControls()) {
+            System.out.println(" " + ctrl);
+        }
+        System.out.println(String.format("Gain is supported: %s", output.isControlSupported(FloatControl.Type.MASTER_GAIN)));
+        System.out.println(String.format("Level: %.1f", output.getLevel()));
     }
 
     public void run() {
-        byte[] buf = new byte[output.getBufferSize()*16/100];
+        byte[] buf = new byte[output.getBufferSize()*output.getFormat().getFrameSize()];
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         output.start();
         try {
-            socket.setSoTimeout(1);
+            socket.setSoTimeout(100);
         } catch (SocketException e) {
             e.printStackTrace();
             return;
@@ -91,15 +83,16 @@ public class Playback extends Thread {
                 } catch (SocketTimeoutException e) {
                     continue;
                 }
-                synchronized (bufferLock) {
-                    buffer_avail = packet.getLength();
-                    buffer = packet.getData();
-                }
+                buffer_avail = packet.getLength();
+                buffer = packet.getData();
+
+                output.write(buffer, 0, buffer_avail);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         output.stop();
+        output.close();
         socket.close();
     }
 

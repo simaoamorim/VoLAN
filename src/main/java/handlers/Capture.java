@@ -10,6 +10,7 @@ package handlers;
 import javax.sound.sampled.*;
 import java.io.IOException;
 import java.net.*;
+import java.util.Arrays;
 
 public class Capture extends Thread {
     private TargetDataLine input;
@@ -60,20 +61,19 @@ public class Capture extends Thread {
 
     @Override
     public void run() {
-        byte[] buf = new byte[input.getBufferSize()*16/100];
+        byte[] buf = new byte[input.getBufferSize()*input.getFormat().getFrameSize()];
         int avail;
-        int read ;
+        int read;
         input.start();
         try {
             input.flush();
             while (!interrupted()) {
                 sleep(10);
                 avail = input.available();
-                if (avail > 0) {
-                    read = input.read(buf, 0, Math.min(avail, buf.length));
-                    if (read == buf.length) { input.flush(); }
-                    socket.send(new DatagramPacket(buf, read, destination, Playback.PORT));
-                }
+                Arrays.fill(buf, (byte) 0);
+                read = input.read(buf, 0, Math.min(avail, buf.length));
+                if (avail > buf.length) { input.flush(); }
+                socket.send(new DatagramPacket(buf, read, destination, Playback.PORT));
             }
         } catch (InterruptedException ignored) {
 
@@ -81,6 +81,8 @@ public class Capture extends Thread {
             e.printStackTrace();
         }
         input.stop();
+        input.flush();
+        input.close();
         socket.close();
     }
 
