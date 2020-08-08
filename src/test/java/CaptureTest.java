@@ -16,10 +16,12 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Timer;
 
 public class CaptureTest {
     private Capture capture;
     private Playback playback;
+    private Timer timer = new Timer();
 
     @BeforeTest
     public void init() throws LineUnavailableException, SocketException, UnknownHostException {
@@ -41,18 +43,18 @@ public class CaptureTest {
 
     @Test
     public void testLoopback() throws InterruptedException {
-        capture.start();
+        timer.scheduleAtFixedRate(capture, 0, 100);
         playback.start();
         Thread.sleep(5000);
-        capture.interrupt();
+        capture.cancel();
         playback.interrupt();
     }
 
     @AfterTest
     public void end() throws InterruptedException {
-        capture.interrupt();
+        capture.cancel();
+        timer.cancel();
         capture.cleanup();
-        capture.join();
         playback.interrupt();
         playback.join();
     }

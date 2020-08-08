@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import java.util.Timer;
 import java.util.concurrent.Semaphore;
 
 public class Launcher extends Thread {
@@ -29,20 +30,20 @@ public class Launcher extends Thread {
     private Semaphore exitSemaphore = new Semaphore(0);
     private Thread shutdownHook = new Thread(this::exit);
     private ActionListener sysTrayListener = new Launcher.Listener();
+    private Timer timer = new Timer();
 
     public Launcher(String[] args, AudioFormat audioFormat) throws SocketException, UnknownHostException, LineUnavailableException {
         capture = new Capture(args[0], audioFormat);
         playback = new Playback(audioFormat);
-        capture.start();
+        timer.scheduleAtFixedRate(capture, 0, 100);
         playback.start();
     }
 
     private void exit() {
-        capture.interrupt();
+        capture.cancel();
         playback.interrupt();
-        capture.cleanup();
         try {
-            capture.join();
+            capture.cleanup();
             playback.join();
             systemTray.remove(trayIcon);
             exitSemaphore.release();

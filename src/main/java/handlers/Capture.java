@@ -11,17 +11,18 @@ import javax.sound.sampled.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
+import java.util.TimerTask;
 
-public class Capture extends Thread {
+public class Capture extends TimerTask {
     private TargetDataLine dataLine;
     @SuppressWarnings({"CanBeFinal", "FieldCanBeLocal"})
     private AudioFormat audioFormat;
     private DatagramSocket socket;
     private InetAddress destination;
     private int avail, read;
+    private byte[] buffer;
 
     public Capture(String remote_hostname, AudioFormat audioFormat) throws LineUnavailableException, SocketException, UnknownHostException {
-        setDaemon(true);
         this.audioFormat = audioFormat;
         DataLine.Info i = new DataLine.Info(TargetDataLine.class, this.audioFormat);
         if (AudioSystem.isLineSupported(i)) {
@@ -34,11 +35,13 @@ public class Capture extends Thread {
         } else {
             System.err.println("Line is not supported");
         }
+        buffer = new byte[dataLine.getBufferSize()*audioFormat.getFrameSize()];
         System.out.println(dataLine.getFormat().toString());
         dataLine.open();
         System.out.println("Buffer size: " + dataLine.getBufferSize());
         destination = InetAddress.getByName(remote_hostname);
         socket = new DatagramSocket();
+        dataLine.flush();
         dataLine.start();
     }
 
@@ -57,23 +60,17 @@ public class Capture extends Thread {
 
     @Override
     public void run() {
-        byte[] buf = new byte[dataLine.getBufferSize()*audioFormat.getFrameSize()];
         try {
-            dataLine.flush();
-            while (!interrupted()) {
-                sleep(10);
-                avail = dataLine.available();
-                Arrays.fill(buf, (byte) 0);
-                read = dataLine.read(buf, 0, Math.min(avail, buf.length));
-                if (avail > buf.length) { dataLine.flush(); }
-                socket.send(new DatagramPacket(buf, read, destination, Playback.PORT));
+            avail = dataLine.available();
+            read = dataLine.read(buffer, 0, Math.min(avail, buffer.length));
+            if (avail > buffer.length) {
+                dataLine.flush();
             }
-        } catch (InterruptedException ignored) {
-
+            socket.send(new DatagramPacket(buffer, read, destination, Playback.PORT));
+            Arrays.fill(buffer, (byte) 0);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        cleanup();
     }
 
     public void cleanup() {
