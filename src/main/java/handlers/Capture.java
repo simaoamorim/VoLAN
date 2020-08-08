@@ -19,15 +19,8 @@ public class Capture extends Thread {
     private DatagramSocket socket;
     private InetAddress destination;
 
-    public Capture(String remote_hostname) throws LineUnavailableException, SocketException, UnknownHostException {
+    public Capture(String remote_hostname, AudioFormat audioFormat) throws LineUnavailableException, SocketException, UnknownHostException {
         setDaemon(true);
-        audioFormat = new AudioFormat(
-                24000,
-                16,
-                1,
-                true,
-                false
-        );
         DataLine.Info i = new DataLine.Info(TargetDataLine.class, audioFormat);
         if (AudioSystem.isLineSupported(i)) {
             try {

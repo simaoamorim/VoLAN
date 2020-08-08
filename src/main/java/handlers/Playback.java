@@ -24,15 +24,8 @@ public class Playback extends Thread {
     public static final int PORT = 56321;
     FloatControl gain;
 
-    public Playback() throws SocketException {
+    public Playback(AudioFormat audioFormat) throws SocketException {
         setDaemon(true);
-        audioFormat = new AudioFormat(
-                24000,
-                16,
-                1,
-                true,
-                false
-        );
         DataLine.Info j = new DataLine.Info(SourceDataLine.class, audioFormat);
         if (AudioSystem.isLineSupported(j)) {
             try {

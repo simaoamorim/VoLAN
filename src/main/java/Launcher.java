@@ -10,6 +10,7 @@ import handlers.Capture;
 import handlers.Playback;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -29,9 +30,9 @@ public class Launcher extends Thread {
     private Thread shutdownHook = new Thread(this::exit);
     private ActionListener sysTrayListener = new Launcher.Listener();
 
-    public Launcher(String[] args) throws SocketException, UnknownHostException, LineUnavailableException {
-        capture = new Capture(args[0]);
-        playback = new Playback();
+    public Launcher(String[] args, AudioFormat audioFormat) throws SocketException, UnknownHostException, LineUnavailableException {
+        capture = new Capture(args[0], audioFormat);
+        playback = new Playback(audioFormat);
         capture.start();
         playback.start();
     }
@@ -112,7 +113,14 @@ public class Launcher extends Thread {
             return;
         }
         try {
-            Launcher launcher = new Launcher(args);
+            AudioFormat audioFormat = new AudioFormat(
+                24000,
+                16,
+                1,
+                true,
+                false
+            );
+            Launcher launcher = new Launcher(args, audioFormat);
             launcher.start();
             launcher.join();
             System.exit(0);
