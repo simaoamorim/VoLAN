@@ -17,15 +17,11 @@ import java.net.SocketTimeoutException;
 
 public class Playback extends Thread {
     private SourceDataLine output;
-    private AudioFormat audioFormat;
-    private DatagramSocket socket;
-    private byte[] buffer;
-    private int buffer_avail;
+    private final DatagramSocket socket;
     public static final int PORT = 56321;
     FloatControl gain;
 
     public Playback(AudioFormat audioFormat) throws SocketException {
-        setDaemon(true);
         DataLine.Info j = new DataLine.Info(SourceDataLine.class, audioFormat);
         if (AudioSystem.isLineSupported(j)) {
             try {
@@ -76,8 +72,8 @@ public class Playback extends Thread {
                 } catch (SocketTimeoutException e) {
                     continue;
                 }
-                buffer_avail = packet.getLength();
-                buffer = packet.getData();
+                int buffer_avail = packet.getLength();
+                byte[] buffer = packet.getData();
 
                 output.write(buffer, 0, buffer_avail);
             }

@@ -21,7 +21,7 @@ import java.util.Timer;
 public class CaptureTest {
     private Capture capture;
     private Playback playback;
-    private Timer timer = new Timer();
+    private final Timer timer = new Timer();
 
     @BeforeTest
     public void init() throws LineUnavailableException, SocketException, UnknownHostException {

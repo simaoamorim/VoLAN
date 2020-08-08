@@ -23,18 +23,18 @@ import java.util.Timer;
 import java.util.concurrent.Semaphore;
 
 public class Launcher extends Thread {
-    private Capture capture;
-    private Playback playback;
+    private final Capture capture;
+    private final Playback playback;
     private SystemTray systemTray;
     private TrayIcon trayIcon;
-    private Semaphore exitSemaphore = new Semaphore(0);
-    private Thread shutdownHook = new Thread(this::exit);
-    private ActionListener sysTrayListener = new Launcher.Listener();
-    private Timer timer = new Timer();
+    private final Semaphore exitSemaphore = new Semaphore(0);
+    private final Thread shutdownHook = new Thread(this::exit);
+    private final ActionListener sysTrayListener = new Launcher.Listener();
 
     public Launcher(String[] args, AudioFormat audioFormat) throws SocketException, UnknownHostException, LineUnavailableException {
         capture = new Capture(args[0], audioFormat);
         playback = new Playback(audioFormat);
+        Timer timer = new Timer();
         timer.scheduleAtFixedRate(capture, 0, 100);
         playback.start();
     }

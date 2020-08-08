@@ -16,11 +16,10 @@ import java.util.TimerTask;
 public class Capture extends TimerTask {
     private TargetDataLine dataLine;
     @SuppressWarnings({"CanBeFinal", "FieldCanBeLocal"})
-    private AudioFormat audioFormat;
-    private DatagramSocket socket;
-    private InetAddress destination;
-    private int avail, read;
-    private byte[] buffer;
+    private final AudioFormat audioFormat;
+    private final DatagramSocket socket;
+    private final InetAddress destination;
+    private final byte[] buffer;
 
     public Capture(String remote_hostname, AudioFormat audioFormat) throws LineUnavailableException, SocketException, UnknownHostException {
         this.audioFormat = audioFormat;
@@ -61,8 +60,8 @@ public class Capture extends TimerTask {
     @Override
     public void run() {
         try {
-            avail = dataLine.available();
-            read = dataLine.read(buffer, 0, Math.min(avail, buffer.length));
+            int avail = dataLine.available();
+            int read = dataLine.read(buffer, 0, Math.min(avail, buffer.length));
             if (avail > buffer.length) {
                 dataLine.flush();
             }
