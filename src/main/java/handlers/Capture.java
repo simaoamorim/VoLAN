@@ -13,18 +13,20 @@ import java.net.*;
 import java.util.Arrays;
 
 public class Capture extends Thread {
-    private TargetDataLine input;
+    private TargetDataLine dataLine;
     @SuppressWarnings({"CanBeFinal", "FieldCanBeLocal"})
     private AudioFormat audioFormat;
     private DatagramSocket socket;
     private InetAddress destination;
+    private int avail, read;
 
     public Capture(String remote_hostname, AudioFormat audioFormat) throws LineUnavailableException, SocketException, UnknownHostException {
         setDaemon(true);
-        DataLine.Info i = new DataLine.Info(TargetDataLine.class, audioFormat);
+        this.audioFormat = audioFormat;
+        DataLine.Info i = new DataLine.Info(TargetDataLine.class, this.audioFormat);
         if (AudioSystem.isLineSupported(i)) {
             try {
-                input = (TargetDataLine) AudioSystem.getLine(i);
+                dataLine = (TargetDataLine) AudioSystem.getLine(i);
                 System.out.println("Line opened successfully");
             } catch (LineUnavailableException e) {
                 System.err.println("Could not get line");
@@ -32,40 +34,38 @@ public class Capture extends Thread {
         } else {
             System.err.println("Line is not supported");
         }
-        System.out.println(input.getFormat().toString());
-        input.open();
-        System.out.println("Buffer size: " + input.getBufferSize());
+        System.out.println(dataLine.getFormat().toString());
+        dataLine.open();
+        System.out.println("Buffer size: " + dataLine.getBufferSize());
         destination = InetAddress.getByName(remote_hostname);
         socket = new DatagramSocket();
+        dataLine.start();
     }
 
     public void printMixers() {
-        System.out.println("System mixers: " + AudioSystem.getTargetLineInfo(input.getLineInfo()).length);
+        System.out.println("System mixers: " + AudioSystem.getTargetLineInfo(dataLine.getLineInfo()).length);
         System.out.println("Input line info:");
-        System.out.println(input.getLineInfo());
+        System.out.println(dataLine.getLineInfo());
     }
 
     public void printLineControls() {
-        System.out.println("Available controls for " + input.getLineInfo().getLineClass().getName());
-        for (Control ctrl: input.getControls()) {
+        System.out.println("Available controls for " + dataLine.getLineInfo().getLineClass().getName());
+        for (Control ctrl: dataLine.getControls()) {
             System.out.println(" " + ctrl);
         }
     }
 
     @Override
     public void run() {
-        byte[] buf = new byte[input.getBufferSize()*input.getFormat().getFrameSize()];
-        int avail;
-        int read;
-        input.start();
+        byte[] buf = new byte[dataLine.getBufferSize()*audioFormat.getFrameSize()];
         try {
-            input.flush();
+            dataLine.flush();
             while (!interrupted()) {
                 sleep(10);
-                avail = input.available();
+                avail = dataLine.available();
                 Arrays.fill(buf, (byte) 0);
-                read = input.read(buf, 0, Math.min(avail, buf.length));
-                if (avail > buf.length) { input.flush(); }
+                read = dataLine.read(buf, 0, Math.min(avail, buf.length));
+                if (avail > buf.length) { dataLine.flush(); }
                 socket.send(new DatagramPacket(buf, read, destination, Playback.PORT));
             }
         } catch (InterruptedException ignored) {
@@ -73,16 +73,14 @@ public class Capture extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        input.stop();
-        input.flush();
-        input.close();
-        socket.close();
+        cleanup();
     }
 
     public void cleanup() {
-        input.stop();
-        input.drain();
-        input.close();
+        dataLine.stop();
+        dataLine.flush();
+        dataLine.close();
+        socket.close();
     }
 
 }

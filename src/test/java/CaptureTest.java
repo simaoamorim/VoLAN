@@ -12,6 +12,7 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -22,8 +23,15 @@ public class CaptureTest {
 
     @BeforeTest
     public void init() throws LineUnavailableException, SocketException, UnknownHostException {
-        capture = new Capture("localhost");
-        playback = new Playback();
+        AudioFormat audioFormat = new AudioFormat(
+                24000,
+                16,
+                1,
+                true,
+                false
+        );
+        capture = new Capture("localhost", audioFormat);
+        playback = new Playback(audioFormat);
     }
 
     @Test
